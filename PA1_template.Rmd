@@ -61,3 +61,5 @@ ggplot(avg_steps_daytype, aes(x = interval, y = steps)) +
   facet_wrap(~ day_type, ncol = 1) +
   labs(title = "Average Steps by Interval: Weekday vs Weekend",
        x = "5-minute Interval", y = "Steps")
+
+#datnqse161119@fpt.edu.vn
