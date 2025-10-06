@@ -1,0 +1,5 @@
+# Load the data
+activity <- read.csv("activity.csv")
+
+# Convert date to Date class
+activity$date <- as.Date(activity$date)
