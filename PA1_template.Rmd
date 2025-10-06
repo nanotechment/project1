@@ -3,3 +3,61 @@ activity <- read.csv("activity.csv")
 
 # Convert date to Date class
 activity$date <- as.Date(activity$date)
+
+# Sum steps per day
+total_steps <- aggregate(steps ~ date, activity, sum, na.rm = TRUE)
+
+# Plot histogram
+hist(total_steps$steps, main = "Total Steps per Day", xlab = "Steps")
+
+# Mean and Median
+mean(total_steps$steps)   # mean
+median(total_steps$steps) # median
+
+# Average steps per interval
+avg_interval <- aggregate(steps ~ interval, activity, mean, na.rm = TRUE)
+
+# Time series plot
+plot(avg_interval$interval, avg_interval$steps, type = "l",
+     xlab = "5-minute Interval", ylab = "Average Steps")
+
+# Interval with max steps
+avg_interval[which.max(avg_interval$steps), ]
+
+# Total NA values
+sum(is.na(activity$steps))
+
+# Strategy: replace NA with mean for that interval
+activity_imputed <- activity
+na_indices <- is.na(activity_imputed$steps)
+
+# Merge with interval mean
+interval_mean <- setNames(avg_interval$steps, avg_interval$interval)
+activity_imputed$steps[na_indices] <- interval_mean[as.character(activity_imputed$interval[na_indices])]
+
+# Histogram after imputation
+total_steps_imputed <- aggregate(steps ~ date, activity_imputed, sum)
+hist(total_steps_imputed$steps, main = "Imputed: Total Steps per Day", xlab = "Steps")
+
+# New mean and median
+mean(total_steps_imputed$steps)
+median(total_steps_imputed$steps)
+
+# Add weekday/weekend factor
+activity_imputed$day_type <- ifelse(weekdays(activity_imputed$date) %in% c("Saturday", "Sunday"),
+                                    "weekend", "weekday")
+
+# Average steps by interval and day type
+library(dplyr)
+library(ggplot2)
+
+avg_steps_daytype <- activity_imputed %>%
+  group_by(interval, day_type) %>%
+  summarise(steps = mean(steps), .groups = "drop")
+
+# Panel plot
+ggplot(avg_steps_daytype, aes(x = interval, y = steps)) +
+  geom_line() +
+  facet_wrap(~ day_type, ncol = 1) +
+  labs(title = "Average Steps by Interval: Weekday vs Weekend",
+       x = "5-minute Interval", y = "Steps")
